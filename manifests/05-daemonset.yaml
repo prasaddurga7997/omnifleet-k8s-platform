@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cluster-logger
+  namespace: kube-system
+  labels:
+    app: cluster-logger
+spec:
+  selector:
+    matchLabels:
+      name: cluster-logger
+  template:
+    metadata:
+      labels:
+        name: cluster-logger
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: workload
+          operator: Equal
+          value: database
+          effect: NoSchedule
+      containers:
+        - name: logger
+          image: busybox:1.28
+          command:
+            - "sh"
+            - "-c"
+            - 'while true; do echo "[$(date)] Log agent collecting telemetry from $(NODE_NAME)"; sleep 15; done'
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
