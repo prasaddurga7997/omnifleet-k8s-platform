@@ -24,6 +24,7 @@ spec:
   containers:
     - name: redis
       image: redis:alpine
+      command: ["redis-server", "--appendonly", "yes"]
       ports:
         - containerPort: 6379
       resources:
@@ -33,11 +34,18 @@ spec:
         limits:
           cpu: 200m
           memory: 128Mi
+      volumeMounts:
+        - name: redis-storage
+          mountPath: /data
       livenessProbe:
         tcpSocket:
           port: 6379
         initialDelaySeconds: 5
         periodSeconds: 10
+  volumes:
+    - name: redis-storage
+      persistentVolumeClaim:
+        claimName: redis-pvc
 ---
 apiVersion: v1
 kind: Service
