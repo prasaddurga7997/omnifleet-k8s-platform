@@ -26,7 +26,7 @@
 * **Decoupled Dynamic Configuration:** Configuration profiles are decoupled using two ConfigMap strategies: bulk environment injection (`envFrom`) and granular key mapping (`valueFrom`).
 * **Edge & Internal Networking:** Exposes internal microservices via stable `ClusterIP` services and routes ingress traffic through an external `NodePort` service.
 * **Full-Cluster Telemetry DaemonSet:** Collects node-level health metrics across all nodes—including the tainted database worker and the control plane—leveraging the Downward API.
-
+* **Stateful Storage Layer:** Implement `PersistentVolume` (PV) and `PersistentVolumeClaim` (PVC) with `hostPath` binding on `worker2` for Redis data persistence.
 ---
 
 ## 🏗️ Architecture Diagram
@@ -64,6 +64,8 @@ graph TD
             subgraph NodeWorker2 ["Node: cka-practise-worker2 (workload=database:NoSchedule)"]
                 DB_SVC[Service: redis-db-svc<br/>Type: ClusterIP :6379]
                 DB_POD[Pod: redis-db<br/>Redis Alpine]
+                DB_POD --> PVC[(PVC: redis-pvc<br/>500Mi RWO)]
+                PVC --> PV[(PV: redis-pv<br/>hostPath /mnt/data/redis)]
             end
         end
     end
